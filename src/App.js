@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import './App.css';
 import SearchBook from  './Components/SearchBook.js';
 import Book from  './Components/Book.js';
-import Paginating from "react-paginating";
+import Pagination from  './Components/Pagination.js';
 
 var Axios = require('axios');
 var convert = require('xml-js');
@@ -104,89 +104,9 @@ class App extends Component {
         )}
         {!!(totalCount > 0) && (
           <div className="container">
-            {!!(!searching && totalCount > 20) && (<Paginating
-              total={totalCount}
-              limit={LIMIT}
-              pageCount={pageCount}
-              currentPage={currentPage}
-            >
-              {({
-                pages,
-                currentPage,
-                hasNextPage,
-                hasPreviousPage,
-                previousPage,
-                nextPage,
-                totalPages,
-                getPageItemProps
-              }) => (
-                <div className="pagination-wrapper">
-                  <button
-                    className="pagination-item"
-                    {...getPageItemProps({
-                      pageValue: 1,
-                      onPageChange: this.handlePageChange
-                    })}
-                  >
-                    First
-                  </button>
-
-                  {hasPreviousPage && (
-                    <button
-                      className="pagination-item"
-                      {...getPageItemProps({
-                        pageValue: previousPage,
-                        onPageChange: this.handlePageChange
-                      })}
-                    >
-                      {"<"}
-                    </button>
-                  )}
-
-                  {pages.map(page => {
-                    let activePage = null;
-                    if (currentPage === page) {
-                      activePage = { backgroundColor: "#fdce09" };
-                    }
-                    return (
-                      <button
-                        className="pagination-item"
-                        {...getPageItemProps({
-                          pageValue: page,
-                          key: page,
-                          style: activePage,
-                          onPageChange: this.handlePageChange
-                        })}
-                      >
-                        {page}
-                      </button>
-                    );
-                  })}
-
-                  {hasNextPage && (
-                    <button
-                      className="pagination-item"
-                      {...getPageItemProps({
-                        pageValue: nextPage,
-                        onPageChange: this.handlePageChange
-                      })}
-                    >
-                      {">"}
-                    </button>
-                  )}
-
-                  <button
-                    className="pagination-item"
-                    {...getPageItemProps({
-                      pageValue: totalPages,
-                      onPageChange: this.handlePageChange
-                    })}
-                  >
-                    Last
-                  </button>
-                </div>
-              )}
-            </Paginating>)}
+            {!!(!searching && totalCount > LIMIT) && (
+              <Pagination limit={LIMIT} totalCount={totalCount} pageCount={pageCount} currentPage={currentPage} handlePageChange={this.handlePageChange} />
+            )}
             {!searching && (
               <div className="book-wrapper">
                 {!!(searchResult.length > 0) ? (searchResult.map(item => (
@@ -196,90 +116,8 @@ class App extends Component {
                 }
               </div>
             )}
-             {!!(!searching && totalCount > 20) && (
-               <Paginating
-               total={totalCount}
-               limit={LIMIT}
-               pageCount={pageCount}
-               currentPage={currentPage}
-             >
-               {({
-                 pages,
-                 currentPage,
-                 hasNextPage,
-                 hasPreviousPage,
-                 previousPage,
-                 nextPage,
-                 totalPages,
-                 getPageItemProps
-               }) => (
-                 <div className="pagination-wrapper">
-                   <button
-                     className="pagination-item"
-                     {...getPageItemProps({
-                       pageValue: 1,
-                       onPageChange: this.handlePageChange
-                     })}
-                   >
-                     First
-                   </button>
- 
-                   {hasPreviousPage && (
-                     <button
-                       className="pagination-item"
-                       {...getPageItemProps({
-                         pageValue: previousPage,
-                         onPageChange: this.handlePageChange
-                       })}
-                     >
-                       {"<"}
-                     </button>
-                   )}
- 
-                   {pages.map(page => {
-                     let activePage = null;
-                     if (currentPage === page) {
-                       activePage = { backgroundColor: "#fdce09" };
-                     }
-                     return (
-                       <button
-                         className="pagination-item"
-                         {...getPageItemProps({
-                           pageValue: page,
-                           key: page,
-                           style: activePage,
-                           onPageChange: this.handlePageChange
-                         })}
-                       >
-                         {page}
-                       </button>
-                     );
-                   })}
- 
-                   {hasNextPage && (
-                     <button
-                       className="pagination-item"
-                       {...getPageItemProps({
-                         pageValue: nextPage,
-                         onPageChange: this.handlePageChange
-                       })}
-                     >
-                       {">"}
-                     </button>
-                   )}
- 
-                   <button
-                     className="pagination-item"
-                     {...getPageItemProps({
-                       pageValue: totalPages,
-                       onPageChange: this.handlePageChange
-                     })}
-                   >
-                     Last
-                   </button>
-                 </div>
-               )}
-             </Paginating>
+             {!!(!searching && totalCount > LIMIT) && (
+               <Pagination limit={LIMIT} totalCount={totalCount} pageCount={pageCount} currentPage={currentPage} handlePageChange={this.handlePageChange} />
              )}
           </div>
         )}
