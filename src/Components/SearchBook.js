@@ -3,23 +3,22 @@ import '../App.css';
 
 
 class SearchBook extends PureComponent {
-  searchInput = React.createRef();
   search = (e) => {
     e.preventDefault();
-    let { value } = this.searchInput || {};
-    if (value && value.length !== 0) {
-      let { searchBooks } = this.props;
-      searchBooks(value);
-    }
+    this.props.searchBooks();
   }
 
   render() {
-    let  { error } = this.props;
+    let  { error, clearSearch, searchTerm = '', onChange } = this.props;
+
     return (
       <div>
         <form onSubmit={this.search}>
-          <input className="search-field" ref={(input) => this.searchInput = input} type="text" placeholder="Search books here" autoComplete="off" name="book" required></input>
+          <input className="search-field" value={searchTerm} onChange={onChange} type="text" placeholder="Search books here" autoComplete="off" name="book" required></input>
           <button type="submit" className="search-action">Search</button>
+          {searchTerm && (
+            <button type="button" className="search-action" onClick={clearSearch}>Clear</button>
+          )}
           {error && (<div className="error">{error}</div>)}
         </form>
       </div>

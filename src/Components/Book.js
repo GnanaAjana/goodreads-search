@@ -7,7 +7,10 @@ const Book = props => {
 
   return (
     <div className="book-item">
-      <img src={imgUrl} alt={book.best_book.title._tex}/> {book.best_book.title._text}
+      <img className="image-container" src={imgUrl} alt={book.best_book.title._tex}/> 
+      <div className="book-item-info">
+        {book.best_book.title._text}
+      </div>
     </div>
   )
 }

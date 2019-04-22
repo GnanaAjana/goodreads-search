@@ -9,7 +9,9 @@ var convert = require('xml-js');
 
 const API_KEY = 'vX2DeITm3UNOQoziy4DHA';
 
-const limit = 20;
+const LIMIT = 20;
+
+const INITIAL_PAGE = 1;
 
 class App extends Component {
   state = {
@@ -17,30 +19,53 @@ class App extends Component {
     searchResult: [],
     searching: false,
     error: '',
-    currentPage: 1,
+    currentPage: INITIAL_PAGE,
     totalCount: 0,
     pageCount: 20,
     initState: true
   }
 
-  handlePageChange = (page, e) => {
-    let { searchTerm } = this.state;
+  setPage = (page, callback = () => {}) => {
     this.setState({
       currentPage: page,
-    });
-    this.getBooks(searchTerm, page);
-  };
-
-  searchBooks = (term) => {
-    let { currentPage } = this.state;
-    this.setState({ searchTerm: term })
-    this.getBooks(term, currentPage);
+    }, callback);
   }
 
-  getBooks = (term, pageState) => {
+  handlePageChange = (page, e) => {
+    this.setPage(page, () => {
+      this.getBooks();
+    });
+  };
+
+  searchBooks = () => {
+    this.setPage(INITIAL_PAGE, () => {
+      this.getBooks();
+    });
+  }
+
+  onChange = e => {
+    e.persist();
+    this.setState({
+      searchTerm: e.target.value,
+    });
+  };
+
+  clearSearch = () => {
+    this.setState({ 
+      searchTerm: '', 
+      searchResult: [], 
+      totalCount: 0, 
+      searching: false,
+      initState: true
+    })
+  }
+
+  getBooks = () => {
+    let { currentPage, searchTerm }= this.state
     const url =
-      `https://cors-anywhere.herokuapp.com/https://www.goodreads.com/search/index.xml?key=${API_KEY}&q=${term}&page=${pageState}`;
-    this.setState({searching: true, initState: false})
+      `https://cors-anywhere.herokuapp.com/https://www.goodreads.com/search/index.xml?key=${API_KEY}&q=${searchTerm}&page=${currentPage}`;
+    this.setState({searching: true, initState: false});
+
     Axios.get(url)
       .then(res => {
         var result1 = convert.xml2json(res.data, { compact: true , spaces: 4 });
@@ -53,22 +78,23 @@ class App extends Component {
       .catch(error => {
         this.setState({
           error: error.toString(),
-          searching: false
+          searching: false,
+          searchResult: []
         });
       });
 
   }
 
   render() {
-    let { error, currentPage, searchResult, totalCount, pageCount, searching, initState } = this.state;
+    let { error, currentPage, searchResult, totalCount, pageCount, searching, initState, searchTerm } = this.state;
     
     return (
       <Fragment>
         <div className="container header">
-          <div className="title-image">
-            <img src="/goodreads-logo.png" alt="goodreads" />
+          <div className="title-image" onClick={this.clearSearch}>
+            <img src="/goodreads-logo.png" alt="goodreads"/>
           </div>
-          <SearchBook searchBooks={this.searchBooks} error={error}/>
+          <SearchBook onChange={this.onChange} searchBooks={this.searchBooks} error={error} searchTerm={searchTerm} clearSearch={this.clearSearch}/>
         </div>
         {searching && (<div className="loading" />)}
         {(!initState && totalCount===0 && !searching) && (
@@ -78,9 +104,9 @@ class App extends Component {
         )}
         {!!(totalCount > 0) && (
           <div className="container">
-            <Paginating
+            {!!(!searching && totalCount > 20) && (<Paginating
               total={totalCount}
-              limit={limit}
+              limit={LIMIT}
               pageCount={pageCount}
               currentPage={currentPage}
             >
@@ -160,7 +186,7 @@ class App extends Component {
                   </button>
                 </div>
               )}
-            </Paginating>
+            </Paginating>)}
             {!searching && (
               <div className="book-wrapper">
                 {!!(searchResult.length > 0) ? (searchResult.map(item => (
@@ -170,7 +196,91 @@ class App extends Component {
                 }
               </div>
             )}
-            
+             {!!(!searching && totalCount > 20) && (
+               <Paginating
+               total={totalCount}
+               limit={LIMIT}
+               pageCount={pageCount}
+               currentPage={currentPage}
+             >
+               {({
+                 pages,
+                 currentPage,
+                 hasNextPage,
+                 hasPreviousPage,
+                 previousPage,
+                 nextPage,
+                 totalPages,
+                 getPageItemProps
+               }) => (
+                 <div className="pagination-wrapper">
+                   <button
+                     className="pagination-item"
+                     {...getPageItemProps({
+                       pageValue: 1,
+                       onPageChange: this.handlePageChange
+                     })}
+                   >
+                     First
+                   </button>
+ 
+                   {hasPreviousPage && (
+                     <button
+                       className="pagination-item"
+                       {...getPageItemProps({
+                         pageValue: previousPage,
+                         onPageChange: this.handlePageChange
+                       })}
+                     >
+                       {"<"}
+                     </button>
+                   )}
+ 
+                   {pages.map(page => {
+                     let activePage = null;
+                     if (currentPage === page) {
+                       activePage = { backgroundColor: "#fdce09" };
+                     }
+                     return (
+                       <button
+                         className="pagination-item"
+                         {...getPageItemProps({
+                           pageValue: page,
+                           key: page,
+                           style: activePage,
+                           onPageChange: this.handlePageChange
+                         })}
+                       >
+                         {page}
+                       </button>
+                     );
+                   })}
+ 
+                   {hasNextPage && (
+                     <button
+                       className="pagination-item"
+                       {...getPageItemProps({
+                         pageValue: nextPage,
+                         onPageChange: this.handlePageChange
+                       })}
+                     >
+                       {">"}
+                     </button>
+                   )}
+ 
+                   <button
+                     className="pagination-item"
+                     {...getPageItemProps({
+                       pageValue: totalPages,
+                       onPageChange: this.handlePageChange
+                     })}
+                   >
+                     Last
+                   </button>
+                 </div>
+               )}
+             </Paginating>
+             )}
           </div>
         )}
       </Fragment>
